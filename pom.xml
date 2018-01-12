@@ -821,6 +821,7 @@
             </requireJavaVersion>
             <requireOS>
               <family>unix</family>
+              <family>windows</family>
             </requireOS>
           </rules>
         </configuration>
