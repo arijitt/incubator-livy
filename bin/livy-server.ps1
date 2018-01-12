@@ -84,21 +84,21 @@ Function Start-Livy-Server()
   if (-not (Test-Path env:LIVY_CONF_DIR)) { $LIVY_CONF_DIR = "$LIVY_HOME\conf" } 
   else { $LIVY_CONF_DIR = $env:LIVY_CONF_DIR }
 
-  if (-not (Test-Path $LIVY_CONF_DIR)) { Write-Error "Could not find Livy conf directory."; Exit }
+  if (-not (Test-Path $LIVY_CONF_DIR)) { throw [System.ApplicationException] "Could not find Livy conf directory." }
 
   Write-Host "LIVY_HOME =" $LIVY_HOME
   Write-Host "LIVY_CONF_DIR =" $LIVY_CONF_DIR
 
   if (Test-Path env:JAVA_HOME) { $JAVA_HOME = $env:JAVA_HOME; $javaExecutable = "$JAVA_HOME\bin\java" }
-  else { Write-Error "JAVA_HOME is not set. Exiting script."; Exit }
+  else { throw [System.ApplicationException] "JAVA_HOME is not set." }
 
   Write-Host "JAVA =" $javaExecutable
 
   if (Test-Path env:SPARK_HOME) { $SPARK_HOME = $env:SPARK_HOME }
-  else { Write-Error "SPARK_HOME is not set. Exiting script."; Exit }
+  else { throw [System.ApplicationException] "SPARK_HOME is not set." }
 
   if (Test-Path env:HADOOP_HOME) { $HADOOP_HOME = $env:HADOOP_HOME }
-  else { Write-Error "HADOOP_HOME is not set. Exiting script."; Exit }
+  else { throw [System.ApplicationException] "HADOOP_HOME is not set." }
 
   if (-not (Test-Path env:LIVY_LOG_DIR)) { $LIVY_LOG_DIR = "$LIVY_HOME\logs" }
   else { $LIVY_LOG_DIR = $env:LIVY_LOG_DIR }
