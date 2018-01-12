@@ -21,10 +21,10 @@ import java.io.File
 import java.lang.{Boolean => JBoolean, Long => JLong}
 import java.util.{Map => JMap}
 
+import org.apache.commons.lang.SystemUtils
+
 import scala.collection.JavaConverters._
-
 import org.apache.hadoop.conf.Configuration
-
 import org.apache.livy.client.common.ClientConf
 import org.apache.livy.client.common.ClientConf.ConfEntry
 import org.apache.livy.client.common.ClientConf.DeprecatedConf
@@ -258,7 +258,16 @@ class LivyConf(loadDefaults: Boolean) extends ClientConf[LivyConf](null) {
 
   /** Return the path to the spark-submit executable. */
   def sparkSubmit(): String = {
-    sparkHome().map { _ + File.separator + "bin" + File.separator + "spark-submit" }.get
+
+    if (SystemUtils.IS_OS_WINDOWS) {
+      sparkHome().map {
+        _ + File.separator + "bin" + File.separator + "spark-submit.cmd"
+      }.get
+    } else {
+      sparkHome().map {
+        _ + File.separator + "bin" + File.separator + "spark-submit"
+      }.get
+    }
   }
 
   private val configDir: Option[File] = {

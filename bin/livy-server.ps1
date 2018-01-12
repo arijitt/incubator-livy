@@ -42,19 +42,12 @@ Function Rotate-Livy-Log()
     {
       $previousFileIndex = $maxFileCount - 1
 
-      if (Test-Path "$logFilePath.$previousFileIndex") 
-      {
-        Move-Item "$logFilePath.$previousFileIndex" "$logFilePath.$maxFileCount" -Force
-        
-        #Write-Host "Moved $logFilePath.$previousFileIndex to $logFilePath.$maxFileCount"
-      }
+      if (Test-Path "$logFilePath.$previousFileIndex") { Move-Item "$logFilePath.$previousFileIndex" "$logFilePath.$maxFileCount" -Force }
 
       $maxFileCount = $previousFileIndex
     }
     
     Move-Item $logFilePath "$logFilePath.$maxFileCount" -Force
-    
-    #Write-Host "Moved $logFilePath $logFilePath.$maxFileCount"
   }
 }
 
@@ -79,20 +72,24 @@ Function Start-Livy-Server()
 
   $currentDirectory = Get-Location
 
-  if (-not (Test-Path env:LIVY_HOME)) { $LIVY_HOME=(Get-Item $currentDirectory).Parent.FullName }
+  #Preset LIVY_HOME but Will attempt to set LIVY_HOME but this may not be visible to Livy server which requires it.
+
+  if (-not (Test-Path env:LIVY_HOME)) 
+  { 
+    $LIVY_HOME=(Get-Item $currentDirectory).Parent.FullName
+    [Environment]::SetEnvironmentVariable("LIVY_HOME", "$LIVY_HOME", "Machine")  
+  } 
+  else { $LIVY_HOME = $env:LIVY_HOME }
+
+  Write-Host "Using LIVY_HOME as $env:LIVY_HOME"
 
   if (-not (Test-Path env:LIVY_CONF_DIR)) { $LIVY_CONF_DIR = "$LIVY_HOME\conf" } 
   else { $LIVY_CONF_DIR = $env:LIVY_CONF_DIR }
 
   if (-not (Test-Path $LIVY_CONF_DIR)) { throw [System.ApplicationException] "Could not find Livy conf directory." }
 
-  Write-Host "LIVY_HOME =" $LIVY_HOME
-  Write-Host "LIVY_CONF_DIR =" $LIVY_CONF_DIR
-
   if (Test-Path env:JAVA_HOME) { $JAVA_HOME = $env:JAVA_HOME; $javaExecutable = "$JAVA_HOME\bin\java" }
   else { throw [System.ApplicationException] "JAVA_HOME is not set." }
-
-  Write-Host "JAVA =" $javaExecutable
 
   if (Test-Path env:SPARK_HOME) { $SPARK_HOME = $env:SPARK_HOME }
   else { throw [System.ApplicationException] "SPARK_HOME is not set." }
@@ -105,11 +102,6 @@ Function Start-Livy-Server()
 
   if (-not (Test-Path env:LIVY_MAX_LOG_FILES)) { $LIVY_MAX_LOG_FILES = 5 }
   else { $LIVY_MAX_LOG_FILES = [math]::Max($env:LIVY_MAX_LOG_FILES,  5) }
-
-  Write-Host "LIVY_LOG_DIR =" $LIVY_LOG_DIR
-  Write-Host "LIVY_MAX_LOG_FILES =" $LIVY_MAX_LOG_FILES
-
-  Write-Host "PID File" = $livyPidFile
 
   Create-Dir $livyServerPidDirectory "LIVY_PID_DIR"
   Create-Dir $LIVY_LOG_DIR "LIVY_LOG_DIR"
@@ -157,9 +149,8 @@ Function Start-Livy-Server()
   $livyStartArguments = "$LIVY_SERVER_JAVA_OPTS -cp `"$livyClassPath;$env:CLASSPATH`" org.apache.livy.server.LivyServer"
 
   Write-Host "Livy server start command: $javaExecutable $livyStartArguments"
-  Write-Host "Livy server log at $logFilePath"
 
-  $livyServerProcess = Start-Process -PassThru -NoNewWindow $javaExecutable $livyStartArguments -Wait -RedirectStandardOutput $livyServerLogFilePath -RedirectStandardError $livyServerErrorFilePath
+  $livyServerProcess = Start-Process -PassThru $javaExecutable $livyStartArguments -RedirectStandardOutput $livyServerLogFilePath -RedirectStandardError $livyServerErrorFilePath
 
   $livyServerPid = $livyServerProcess.Id
 
@@ -167,12 +158,13 @@ Function Start-Livy-Server()
   
   #Write out the process Id of the livy server process
   
-  if ((Get-Process -Id $livyServerPid -ErrorAction SilentlyContinue) -eq $Null)
+  if ((Get-Process -Id $livyServerPid -ErrorAction SilentlyContinue) -ne $Null)
   {
     Set-Content -Path $livyServerPidFile -Value $livyServerPid
 
-    Write-Host "Wrote livy server process Id $livyServerPid to $livyServerPidFile"
+    Write-Host "Livy server process Id $livyServerPid recorded at $livyServerPidFile"
   }
+  else { throw [System.ApplicationException] "Failed to start Livy server." }
 }
 
 Function Stop-Livy-Server()
