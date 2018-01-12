@@ -144,6 +144,16 @@ Function Start-Livy-Server()
 
   $livyClassPath = "$livyClassPath;$HADOOP_CONF_DIR"
 
+  if (-not (Test-Path env:HADOOP_YARN_DIR))
+  {
+    $HADOOP_YARN_DIR = "$HADOOP_HOME\share\hadoop\yarn"
+  } 
+
+  if (Test-Path $HADOOP_YARN_DIR)
+  {
+    $livyClassPath = "$livyClassPath;$HADOOP_YARN_DIR\*"
+  }
+
   if (Test-Path "$LIVY_CONF_DIR\livy-env.cmd" -PathType Leaf) { Invoke-Item "$LIVY_CONF_DIR\livy-env.cmd"}
 
   $livyStartArguments = "$LIVY_SERVER_JAVA_OPTS -cp `"$livyClassPath;$env:CLASSPATH`" org.apache.livy.server.LivyServer"
