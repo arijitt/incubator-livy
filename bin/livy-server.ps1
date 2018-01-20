@@ -81,7 +81,7 @@ Function Start-Livy-Server()
   } 
   else { $LIVY_HOME = $env:LIVY_HOME }
 
-  Write-Host "Using LIVY_HOME as $env:LIVY_HOME"
+  Write-Host "Using LIVY_HOME as $env:LIVY_HOME."
 
   if (-not (Test-Path env:LIVY_CONF_DIR)) { $LIVY_CONF_DIR = "$LIVY_HOME\conf" } 
   else { $LIVY_CONF_DIR = $env:LIVY_CONF_DIR }
@@ -158,13 +158,13 @@ Function Start-Livy-Server()
 
   $livyStartArguments = "$LIVY_SERVER_JAVA_OPTS -cp `"$livyClassPath;$env:CLASSPATH`" org.apache.livy.server.LivyServer"
 
-  Write-Host "Livy server start command: $javaExecutable $livyStartArguments"
+  Write-Host "Livy server start command: $javaExecutable $livyStartArguments."
 
   $livyServerProcess = Start-Process -PassThru $javaExecutable $livyStartArguments -RedirectStandardOutput $livyServerLogFilePath -RedirectStandardError $livyServerErrorFilePath
 
   $livyServerPid = $livyServerProcess.Id
 
-  Write-Host "Livy server started with process Id $livyServerPid" 
+  Write-Host "Livy server started with process Id $livyServerPid." 
   
   #Write out the process Id of the livy server process
   
@@ -172,7 +172,7 @@ Function Start-Livy-Server()
   {
     Set-Content -Path $livyServerPidFile -Value $livyServerPid
 
-    Write-Host "Livy server process Id $livyServerPid recorded at $livyServerPidFile"
+    Write-Host "Livy server process Id $livyServerPid recorded at $livyServerPidFile."
   }
   else { throw [System.ApplicationException] "Failed to start Livy server." }
 }
@@ -217,7 +217,7 @@ Function Query-Livy-Server-Status()
 $scriptUsage = "Usage: livy-server (start|stop|status)"
 $scriptAction = $args[0]
 
-Write-Host "Script action: livy-server $scriptAction"
+Write-Host "Script action: livy-server $scriptAction."
 
 if (-not (Test-Path env:LIVY_IDENT_STRING)) { $LIVY_IDENT_STRING = $env:USERNAME }
 else { $LIVY_IDENT_STRING = $env:LIVY_IDENT_STRING }
