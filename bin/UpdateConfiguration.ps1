@@ -58,7 +58,7 @@ $fileContent = Get-Content -Path "$FilePath.template" | % {
   {
        $_
   }
-} | Out-File -filepath "$FilePath"
+} | Out-File -Encoding ascii -filepath "$FilePath"
 
 #Append those not found
 
@@ -71,7 +71,7 @@ for ($i = 0; $i -lt $ConfigurationKeys.Length; ++$i)
 
     Write-Host "Key $ConfigurationKey added with value $ConfigurationValue."
 
-    "`r$ConfigurationKey = $ConfigurationValue" | Out-File -filepath $FilePath -Append
+    "`r$ConfigurationKey = $ConfigurationValue" | Out-File -Encoding ascii -filepath $FilePath -Append
   }
 }
 
